@@ -10,7 +10,7 @@ export default async function HomePage() {
     });
 
     if (!session) {
-        toast("Unauthorized.")
+        toast.error("Unauthorized.")
         redirect("/auth/sign-in");
     }
 
