@@ -3,8 +3,18 @@
  * for Docker builds.
  */
 import "./src/env.js";
+import { env } from "./src/env.js";
 
 /** @type {import("next").NextConfig} */
-const config = {};
+const config = {
+    images: {
+        remotePatterns: [
+            {
+                protocol: "https",
+                hostname: env.AWS_RESOURCE_ACCESS_DOMAIN
+            }
+        ]
+    }
+};
 
 export default config;

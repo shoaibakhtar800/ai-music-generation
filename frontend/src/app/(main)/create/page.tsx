@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { toast } from "sonner";
 import SongPanel from "~/components/create/song-panel";
-import TrackListFetcher from "~/components/create/track-list-fetch";
+import TrackListFetcher from "~/components/create/track-list-fetcher";
 import { auth } from "~/lib/auth"
 
 export default async function HomePage() {

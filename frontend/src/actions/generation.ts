@@ -46,6 +46,7 @@ export async function queueSong(generateSong: GenerateSongProps, guidanceScale: 
             title: title,
             prompt: generateSong.prompt,
             lyrics: generateSong.lyrics,
+            describedLyrices: generateSong.describedLyrics,
             fullDescribedSong: generateSong.fullDescribedSong,
             instrumental: generateSong.instrumental,
             guidanceScale: guidanceScale,
@@ -62,7 +63,35 @@ export async function queueSong(generateSong: GenerateSongProps, guidanceScale: 
     });
 }
 
-export async function getPResignedUrl(s3Key: string) {
+export async function getPlayUrl(songId: string) {
+    const session = await auth.api.getSession({
+        headers: await headers(),
+    });
+
+    if (!session) {
+        redirect("/auth/sign-in");
+    }
+
+    const song = await db.song.findUniqueOrThrow({
+        where: {
+            id: songId,
+            OR: [{ userId: session.user.id }, { published: true }],
+            s3Key: { not: null },
+        },
+        select: {
+            s3Key: true,
+        },
+    });
+
+    await db.song.update({
+        where: { id: songId },
+        data: { listenCount: { increment: 1 } },
+    });
+
+    return await getPresignedUrl(song.s3Key!);
+}
+
+export async function getPresignedUrl(s3Key: string) {
     const s3Client = new S3Client({
         region: env.AWS_REGION,
         credentials: {
