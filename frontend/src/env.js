@@ -23,6 +23,8 @@ export const env = createEnv({
       GENERATE_WITH_LYRICS: z.string(),
       BETTER_AUTH_SECRET: z.string(),
       BETTER_AUTH_URL: z.string(),
+      POLAR_ACCESS_TOKEN: z.string(),
+      POLAR_WEBHOOK_SECRET: z.string()
   },
 
   /**
@@ -52,7 +54,9 @@ export const env = createEnv({
     GENERATE_WITH_DESCRIBED_LYRICS: process.env.GENERATE_WITH_DESCRIBED_LYRICS,
     GENERATE_WITH_LYRICS: process.env.GENERATE_WITH_LYRICS,
     BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
-    BETTER_AUTH_URL: process.env.BETTER_AUTH_URL
+    BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
+    POLAR_ACCESS_TOKEN: process.env.POLAR_ACCESS_TOKEN,
+    POLAR_WEBHOOK_SECRET: process.env.POLAR_WEBHOOK_SECRET
     // Add more server-side env vars here...
     // For client-side env vars, make sure to prefix them with `NEXT_PUBLIC_`
     // and add them to the `client` schema above.

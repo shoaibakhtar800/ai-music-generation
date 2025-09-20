@@ -8,9 +8,11 @@ import Image from "next/image";
 import { getPlayUrl } from "~/actions/generation";
 import { Badge } from "../ui/badge";
 import { renameSong, setPublishedStatus } from "~/actions/song";
-import { DropdownMenu, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
-import { DropdownMenuContent } from "@radix-ui/react-dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import RenameDialog from "./rename-dialog";
+import { useRouter } from "next/navigation";
+import { usePlayerStore } from "~/stores/use-player-store";
+import { toast } from "sonner";
 
 export interface Track {
     id: string;
@@ -29,10 +31,12 @@ export interface Track {
 }
 
 export default function TrackList({ tracks }: { tracks: Track[] }) {
+    const router = useRouter();
     const [searchQuery, setSearchQuery] = useState("");
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [loadingTrackId, setLoadingTrackId] = useState<string | null>(null);
     const [trackToRename, setTrackToRename] = useState<Track | null>(null);
+    const setTrack = usePlayerStore((state) => state.setTrack);
 
     const handleTrackSelect = async (track: Track) => {
         if (loadingTrackId) return;
@@ -41,11 +45,24 @@ export default function TrackList({ tracks }: { tracks: Track[] }) {
         const playUrl = await getPlayUrl(track.id);
         setLoadingTrackId(null);
 
-        console.log("Play URL:", playUrl);
+        setTrack({
+            id: track.id,
+            title: track.title,
+            url: playUrl,
+            artwork: track.thumbnailUrl,
+            prompt: track.prompt,
+            createdByUserName: track.createdByUserName
+        });
     }
 
     const filteredTracks = tracks.filter((track) => track.title?.toLowerCase().includes(searchQuery.toLowerCase()) ??
         track.prompt?.toLowerCase().includes(searchQuery.toLowerCase()));
+
+    const handleRefresh = async () => {
+        setIsRefreshing(true);
+        router.refresh();
+        setTimeout(() => setIsRefreshing(false), 1000);
+    };
 
     return (
         <div className="flex flex-1 flex-col overflow-y-scroll">
@@ -55,7 +72,7 @@ export default function TrackList({ tracks }: { tracks: Track[] }) {
                         <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
                         <Input placeholder="Search..." className="pl-10" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
                     </div>
-                    <Button disabled={isRefreshing} variant="outline" size="sm" onClick={() => { }}>
+                    <Button disabled={isRefreshing} variant="outline" size="sm" onClick={handleRefresh}>
                         {isRefreshing ? <Loader2 className="mr-2 animate-spin" /> : <RefreshCcw className="mr-2" />}
                         Refresh
                     </Button>
@@ -140,7 +157,8 @@ export default function TrackList({ tracks }: { tracks: Track[] }) {
                                         <div className="flex items-center gap-2">
                                             <Button onClick={async (e) => {
                                                 e.stopPropagation();
-                                                await setPublishedStatus(filteredTrack.id, !filteredTrack.published)
+                                                await setPublishedStatus(filteredTrack.id, !filteredTrack.published);
+                                                toast.success(!filteredTrack.published ? "Track published successfully! 🚀" : "Song unpublished successfully");
                                             }}
                                                 variant="outline"
                                                 size="sm"
@@ -178,7 +196,13 @@ export default function TrackList({ tracks }: { tracks: Track[] }) {
                                     </div>
                                 );
                         }
-                    })) : (<div>Hello</div>)}
+                    })) : (
+                        <div className="flex flex-col items-center justify-center pt-20 text-center">
+                            <Music className="text-muted-foreground h-10 w-10" />
+                            <h2 className="mt-4 text-lg font-semibold">No Music Yet</h2>
+                            <p className="text-muted-foreground mt-1 text-sm">{searchQuery ? "no tracks match your search" : "Create your first song to get started."}</p>
+                        </div>
+                    )}
                 </div>
             </div>
 
