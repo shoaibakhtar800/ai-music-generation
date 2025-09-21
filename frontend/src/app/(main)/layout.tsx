@@ -14,7 +14,7 @@ import SoundBar from "~/components/sound-bar";
 export const metadata: Metadata = {
     title: "Home",
     description: "AI-powered music generation tool",
-    icons: [{ rel: "icon", url: "/favicon.ico" }],
+    icons: [{ rel: "icon", url: "/favicon.svg" }],
 };
 
 const geist = Geist({
